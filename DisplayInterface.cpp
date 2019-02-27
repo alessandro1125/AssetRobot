@@ -15,12 +15,13 @@ static void executeOperation(queueParameters_t * parameters) {
     if(evType == 0x01) {
         Motor motor = ( * controller.motor);
         if(controller.type == 0) {
-            ESP_LOGI("NEXTION","Moving state %d", motor.checkMoving());
             if((motor.checkMoving() == MOTOR_NOT_MOVING)) {
                 uint32_t tgPosition = motor.getParam(MENO_POSITION);
                 ESP_LOGI("NEXTION","Position %d", tgPosition);
                 if(tgPosition != SERIAL_TIMEOUT_ERROR && tgPosition != GENERIC_ERROR)
                     motor.executeMovement(tgPosition);      
+            }else {
+                ESP_LOGI("NEXTION","Moving state %d", motor.checkMoving());
             }
         }
         if(controller.type == 1) {
@@ -29,6 +30,8 @@ static void executeOperation(queueParameters_t * parameters) {
                 ESP_LOGI("NEXTION","Position %d", tgPosition);
                 if(tgPosition != SERIAL_TIMEOUT_ERROR && tgPosition != GENERIC_ERROR)
                     motor.executeMovement(tgPosition);
+            }else {
+                ESP_LOGI("NEXTION","Moving state %d", motor.checkMoving());
             }
         }
     }

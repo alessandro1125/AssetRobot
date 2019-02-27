@@ -17,15 +17,18 @@ extern "C" {
 #include "esp_system.h"
 #include "esp_log.h"
 #include "DisplayInterface.h"
+#include "WdtUtils.h"
 
 typedef struct {
     int priority;
+    int executed = 1;
     void (* action)(queueParameters_t * parameters);
     queueParameters_t params;
 }function_t;
 
 void registerAction(int priority, void (* action)(queueParameters_t * parameters), queueParameters_t * parameters);
 void queueInitialize();
+int searchMaxPriority(function_t * functions, int len);
 
 #ifdef __cplusplus
 }
