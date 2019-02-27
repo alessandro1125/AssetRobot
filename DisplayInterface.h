@@ -8,6 +8,7 @@ extern "C" {
 #include "NextionUtils.h"
 #include "MotorController.h"
 
+
 #define RX_BUFFER_LEN 255
 
 typedef struct {
@@ -24,8 +25,15 @@ typedef struct {
     const char * progressBarId;
 }controller_t;
 
+typedef struct {
+    int evType;
+    controller_t * controller;
+}queueParameters_t;
+
 void InitializeDisplay(void);
 void DefineController(int displayId, const char * progressBarId, Motor * mc, int type);
+
+#include "AsyncQueue.h"
 
 #ifdef __cplusplus
 }

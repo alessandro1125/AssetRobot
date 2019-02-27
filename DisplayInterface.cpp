@@ -3,14 +3,10 @@
 controller_t controllers[RX_BUFFER_LEN];
 int controllersCount;
 
-typedef struct {
-    int evType;
-    controller_t * controller;
-}queueParameters_t;
+static void executeOperation(queueParameters_t * parameters) {
 
-static void executeOperation(void * parameters) {
-
-    queueParameters_t params = *((queueParameters_t *) parameters);
+    //queueParameters_t params = *((queueParameters_t *) parameters);
+    queueParameters_t params = (*parameters);
 
     int evType = params.evType;
     controller_t controller = (*params.controller);
@@ -75,7 +71,7 @@ static void event_callback(int evType, component_t component) {
             queueParameters_t params;
             params.controller = &controllers[i];
             params.evType = evType;
-            executeOperation(&params);
+            registerAction(0, &executeOperation, &params);
         }
     }
 }
@@ -83,6 +79,7 @@ static void event_callback(int evType, component_t component) {
 void InitializeDisplay(void) {
     display_init(UART_NUM_2);
     setEventListener(event_callback); 
+    queueInitialize();
 }
 
 void DefineController(int displayId, const char * progressBarId, Motor * mc, int type) {
