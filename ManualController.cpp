@@ -1,6 +1,6 @@
 #include "ManualController.h"
 
-extern Motor * motors;
+extern Motor motors[32];
 
 void InitializeManualController(void) {
     Motor * mc;

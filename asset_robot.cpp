@@ -15,8 +15,6 @@
 
 void librariesInitializer(void);
 
-extern Motor * motors;
-
 extern "C" void app_main()
 {
     wdtInit(WDT_TIMEOUT_S);
@@ -24,12 +22,9 @@ extern "C" void app_main()
 
     librariesInitializer();
 
-    Motor mc;
+    /*Motor mc;
     mc.setArmId(1);
-    mc.executeMovement(0);
-
-    DefineController(1, &mc, 0);
-    DefineController(2, &mc, 1);
+    mc.executeMovement(4000);*/
 
     int count = 0;
 
@@ -42,26 +37,30 @@ extern "C" void app_main()
             count = 0;
         }
         
-        char buffer[255];
+        /*char buffer[255];
         sprintf(buffer, "jpos1.val=%03d", count);
-        sendDisplayStatement(buffer, 13);
+        sendDisplayStatement(buffer, 13);*/
 
 
         
         /*
         if(mc.checkMoving() == MOTOR_NOT_MOVING) {
+            uint32_t mpos = mc.getParam(MENO_POSITION);
+            ESP_LOGI("MAIN","Meno position: %d", mpos);
             mc.executeMovement(4500);
             vTaskDelay(4000 / portTICK_PERIOD_MS);
             mc.stopMovement();
             vTaskDelay(2000 / portTICK_PERIOD_MS);
             mc.executeMovement(8000);
             ESP_LOGI("MAIN","Error: %d", mc.getLastError());
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
-        }*/
+            vTaskDelay(13000 / portTICK_PERIOD_MS);
+            mc.executeMovement(0);
+            vTaskDelay(13000 / portTICK_PERIOD_MS);
+        }else
+            ESP_LOGI("MAIN","Moving: %d", mc.checkMoving());
+*/
 
-        ESP_LOGI("MAIN","Running");
-
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
 
 
         wdtReset();

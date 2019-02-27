@@ -40,6 +40,7 @@ extern "C" {
 #define     ALREADING_MOVING        0x111
 #define     UPDATE_COMPLETED        0x120
 #define     READ_COMPLETED          0x130
+#define     SERIAL_PORT_BUSY        0x101
 
 //___ 0x200 => MOTION STATES ___
 #define     MOTOR_NOT_MOVING        0x200

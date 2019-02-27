@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "RobotStructure.h"
 #include "DisplayInterface.h"
 
 

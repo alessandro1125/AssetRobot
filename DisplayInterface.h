@@ -21,11 +21,11 @@ typedef struct {
      * 3 -> progress bar
      */
     int type;
-    char * progressBarId;
+    const char * progressBarId;
 }controller_t;
 
 void InitializeDisplay(void);
-void DefineController(int displayId, char * progressBarId, Motor * mc, int type);
+void DefineController(int displayId, const char * progressBarId, Motor * mc, int type);
 
 #ifdef __cplusplus
 }

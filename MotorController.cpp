@@ -4,15 +4,16 @@
 
 #include "MotorController.h"
 
-uint16_t armAddress = 0xFFFF;
-
 void Motor::setArmId(uint16_t armId) {
-    armAddress = armId;
+    Motor::asses_id = armId;
 }
 
 int Motor::checkMoving() {
     param_t destParam;
-    switch(readParam(&destParam, ON_MOVING, armAddress)) {
+    while(serialFree() != 0);
+    switch(readParam(&destParam, ON_MOVING, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 0:
@@ -28,7 +29,10 @@ int Motor::checkMoving() {
 
 int Motor::initPosition() {
     ESP_LOGI(MOTOR_CONTROLLER_TAG,"Initializing arm to default position");
-    switch(executeCmd(INIT_POSITION_CMD, armAddress)) {
+    while(serialFree() != 0);
+    switch(executeCmd(INIT_POSITION_CMD, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 0:
@@ -40,7 +44,10 @@ int Motor::initPosition() {
 
 int Motor::stopMovement() {
     ESP_LOGI(MOTOR_CONTROLLER_TAG,"Stopping movement");
-    switch(executeCmd(STOP_MOVEMENT_CMD, armAddress)) {
+    while(serialFree() != 0);
+    switch(executeCmd(STOP_MOVEMENT_CMD, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 0:
@@ -52,7 +59,10 @@ int Motor::stopMovement() {
 
 int Motor::getLastError() {
     ESP_LOGI(MOTOR_CONTROLLER_TAG,"Reading errors");
-    int res = executeCmd(GET_ERRORS_CMD, armAddress);
+    while(serialFree() != 0);
+    int res = executeCmd(GET_ERRORS_CMD, Motor::asses_id);
+    if(res == -2)
+        return SERIAL_PORT_BUSY;
     if(res == -1)
         return -1; // SERIAL_ERROR
     else
@@ -61,7 +71,10 @@ int Motor::getLastError() {
 
 uint32_t Motor::getCurrentPosition() {
     param_t destParam;
-    switch(readParam(&destParam, CURRENT_POSITION , armAddress)) {
+    while(serialFree() != 0);
+    switch(readParam(&destParam, CURRENT_POSITION , Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 0:
@@ -73,7 +86,10 @@ uint32_t Motor::getCurrentPosition() {
 
 uint32_t Motor::getParam(uint16_t address) {
     param_t destParam;
-    switch(readParam(&destParam, address , armAddress)) {
+    while(serialFree() != 0);
+    switch(readParam(&destParam, address , Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 0:
@@ -89,14 +105,19 @@ int Motor::executeMovement(int32_t position) {
     param_t newPosition;
     newPosition.address = TARGET_POSITION;
     newPosition.value = (uint32_t) position;
-    switch(updateParam(newPosition, armAddress)) {
+    while(serialFree() != 0);
+    switch(updateParam(newPosition, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1: 
             return SERIAL_TIMEOUT_ERROR;
         case 0:break;
         default:break;
     }
     // Execute movement
-    switch(executeCmd(EXECUTE_MOVEMENT_CMD, armAddress)) {
+    switch(executeCmd(EXECUTE_MOVEMENT_CMD, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
         case -1:
             return SERIAL_TIMEOUT_ERROR;
         case 1:

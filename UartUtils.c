@@ -55,6 +55,13 @@ static void rx_task(void * pvParameters) {
         if(uart2_en == 1) {
             const int rxBytes = uart_read_bytes(UART_NUM_2, rxBufferData, RX_BUF_SIZE, 0);
             if (rxBytes > 0) {
+
+                /* debug */
+                for(size_t i = 0; i < rxBytes; i++)
+                {
+                    ESP_LOGI("UART", "Byte: %d", rxBufferData[i]);
+                }
+                
                 uart2_rx_handler(rxBufferData, rxBytes);
             }
         }

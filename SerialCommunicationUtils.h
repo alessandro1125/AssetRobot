@@ -156,6 +156,12 @@ void saveParam(param_t value); // functions to save param to the array
  */
 int getParam(param_t * dest, uint8_t address); // function to get and delete param
 
+/**
+ * 0 -> free
+ * 1 -> not free
+ */
+int serialFree(void);
+
 #ifdef __cplusplus
 }
 #endif

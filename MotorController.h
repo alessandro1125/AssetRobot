@@ -21,7 +21,7 @@ extern "C" {
 class Motor {
     public:
         /* External params */
-        uint16_t asses_id;
+        uint16_t asses_id = 0xFFFF;
 
         /* Internal params */
         /*uint16_t aceleration;

@@ -12,12 +12,7 @@ uint8_t msbId;
 uint8_t lsbId;
 uint8_t actionId;
 
-void uart2_handler(uint8_t * recivedData, size_t len) {
-    
-
-    for(int i = 0; i < len ; i++)
-        ESP_LOGI("NEXTION","Code recieved %d", recivedData[i]);
-
+static void uart2_handler(uint8_t * recivedData, size_t len) {
     for(size_t i = 0; i < len; i++)
     {
         uint8_t data = recivedData[i];
@@ -46,6 +41,7 @@ void uart2_handler(uint8_t * recivedData, size_t len) {
                     compId = (compId << 8);
                     compId |= lsbId;
                     component.id = compId;
+                    ESP_LOGI("Nextion Utils", "Evento riccevuto: %d", actionId);
                     event_listener(actionId, component);
                 }
                 state = 0;

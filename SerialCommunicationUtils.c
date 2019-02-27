@@ -22,6 +22,12 @@ uint16_t lastAddressRecieved = 0xFFFF;
 
 TaskHandle_t timeOutHandler = NULL;
 
+int serialBusy = 0;
+
+int serialFree(void) {
+    return serialBusy;
+}
+
 void uart1_handler(uint8_t * recivedData, size_t len) {
     /*
     * Decodifico il pacchetto
@@ -103,98 +109,116 @@ void timeoutTask(void * pvParameters) {
 
 
 int readParam(param_t * dest, uint8_t address, uint16_t armAddress){
-    lastAddressCalled = armAddress;
-    uartSendByte(UART_NUM_1, 0x02);
-    char armAddresl = (uint16_t)armAddress;
-    armAddress = (armAddress >> 8);
-    char armAddresh = armAddress;
-    uartSendByte(UART_NUM_1, armAddresh);
-    uartSendByte(UART_NUM_1, armAddresl);
-    uartSendByte(UART_NUM_1, 0x02);
-    uartSendByte(UART_NUM_1, address);
-    uartSendByte(UART_NUM_1, address);
-    uartSendByte(UART_NUM_1, 0x03);
-    // Create timeout task
-    timeoutFlag = 1;
-    xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
-    while(getParam(dest, address) == -1) {
-        if(timeoutFlag == 0) {
-            ESP_LOGI("RX_TASK_TAG","Reading timout failed");
-            return -1;
+    if(serialBusy == 0) {
+        serialBusy = 1;
+        lastAddressCalled = armAddress;
+        uartSendByte(UART_NUM_1, 0x02);
+        char armAddresl = (uint16_t)armAddress;
+        armAddress = (armAddress >> 8);
+        char armAddresh = armAddress;
+        uartSendByte(UART_NUM_1, armAddresh);
+        uartSendByte(UART_NUM_1, armAddresl);
+        uartSendByte(UART_NUM_1, 0x02);
+        uartSendByte(UART_NUM_1, address);
+        uartSendByte(UART_NUM_1, address);
+        uartSendByte(UART_NUM_1, 0x03);
+        // Create timeout task
+        timeoutFlag = 1;
+        xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
+        while(getParam(dest, address) == -1) {
+            if(timeoutFlag == 0) {
+                ESP_LOGI("RX_TASK_TAG","Reading timout failed");
+                serialBusy = 0;
+                return -1;
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        serialBusy = 0;
+        if( timeOutHandler != NULL ) {
+            vTaskDelete(timeOutHandler);
+        }
+        return 0;
     }
-    if( timeOutHandler != NULL ) {
-        vTaskDelete(timeOutHandler);
-    }
-    return 0;
+    return -2;
 }
 
 int updateParam(param_t param, uint16_t armAddress) {
-    lastAddressCalled = armAddress;
-    char checkByte = param.address;
-    uartSendByte(UART_NUM_1, 0x02);
-    char armAddresl = (uint16_t)armAddress;
-    armAddress = (armAddress >> 8);
-    char armAddresh = armAddress;
-    uartSendByte(UART_NUM_1, armAddresh);
-    uartSendByte(UART_NUM_1, armAddresl);
-    uartSendByte(UART_NUM_1, 0x01);
-    uartSendByte(UART_NUM_1, param.address);
-    uartSendByte(UART_NUM_1, param.value >> 24);
-    uartSendByte(UART_NUM_1, param.value >> 16);
-    uartSendByte(UART_NUM_1, param.value >> 8);
-    uartSendByte(UART_NUM_1, param.value);
-    checkByte += (param.value >> 24);
-    checkByte += (param.value >> 16);
-    checkByte += (param.value >> 8);
-    checkByte += param.value;
-    uartSendByte(UART_NUM_1, checkByte);
-    uartSendByte(UART_NUM_1, 0x03);
-    // Create timeout task
-    timeoutFlag = 1;
-    xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
-    param_t returnParam;
-    while(getParam(&returnParam, 0xFE) == -1) {
-        if(timeoutFlag == 0) {
-            ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
-            return -1;
+    if(serialBusy == 0) {
+        serialBusy = 1;
+        lastAddressCalled = armAddress;
+        char checkByte = param.address;
+        uartSendByte(UART_NUM_1, 0x02);
+        char armAddresl = (uint16_t)armAddress;
+        armAddress = (armAddress >> 8);
+        char armAddresh = armAddress;
+        uartSendByte(UART_NUM_1, armAddresh);
+        uartSendByte(UART_NUM_1, armAddresl);
+        uartSendByte(UART_NUM_1, 0x01);
+        uartSendByte(UART_NUM_1, param.address);
+        uartSendByte(UART_NUM_1, param.value >> 24);
+        uartSendByte(UART_NUM_1, param.value >> 16);
+        uartSendByte(UART_NUM_1, param.value >> 8);
+        uartSendByte(UART_NUM_1, param.value);
+        checkByte += (param.value >> 24);
+        checkByte += (param.value >> 16);
+        checkByte += (param.value >> 8);
+        checkByte += param.value;
+        uartSendByte(UART_NUM_1, checkByte);
+        uartSendByte(UART_NUM_1, 0x03);
+        // Create timeout task
+        timeoutFlag = 1;
+        xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
+        param_t returnParam;
+        while(getParam(&returnParam, 0xFE) == -1) {
+            if(timeoutFlag == 0) {
+                ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
+                serialBusy = 0;
+                return -1;
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        serialBusy = 0;
+        if( timeOutHandler != NULL ) {
+            vTaskDelete(timeOutHandler);
+        }
+        return returnParam.value;
     }
-    if( timeOutHandler != NULL ) {
-        vTaskDelete(timeOutHandler);
-    }
-    return returnParam.value;
+    return -2;
 }
 
 int executeCmd(uint8_t cmd, uint16_t armAddress) {
-    lastAddressCalled = armAddress;
-    uartSendByte(UART_NUM_1, 0x02);
-    char armAddresl = (uint16_t)armAddress;
-    armAddress = (armAddress >> 8);
-    char armAddresh = armAddress;
-    uartSendByte(UART_NUM_1, armAddresh);
-    uartSendByte(UART_NUM_1, armAddresl);
-    uartSendByte(UART_NUM_1, 0x03);
-    uartSendByte(UART_NUM_1, cmd);
-    uartSendByte(UART_NUM_1, cmd);
-    uartSendByte(UART_NUM_1, 0x03);
-    // Create timeout task
-    timeoutFlag = 1;
-    xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
-    param_t returnParam;
-    while(getParam(&returnParam, 0xFE) == -1 && getParam(&returnParam, 0xFF) == -1) { // 0xFE, address to eedback
-        if(timeoutFlag == 0) {
-            ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
-            return -1;
+    if(serialBusy == 0) {
+        serialBusy = 1;
+        lastAddressCalled = armAddress;
+        uartSendByte(UART_NUM_1, 0x02);
+        char armAddresl = (uint16_t)armAddress;
+        armAddress = (armAddress >> 8);
+        char armAddresh = armAddress;
+        uartSendByte(UART_NUM_1, armAddresh);
+        uartSendByte(UART_NUM_1, armAddresl);
+        uartSendByte(UART_NUM_1, 0x03);
+        uartSendByte(UART_NUM_1, cmd);
+        uartSendByte(UART_NUM_1, cmd);
+        uartSendByte(UART_NUM_1, 0x03);
+        // Create timeout task
+        timeoutFlag = 1;
+        xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
+        param_t returnParam;
+        while(getParam(&returnParam, 0xFE) == -1 && getParam(&returnParam, 0xFF) == -1) { // 0xFE, address to eedback
+            if(timeoutFlag == 0) {
+                ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
+                serialBusy = 0;
+                return -1;
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        serialBusy = 0;
+        if( timeOutHandler != NULL ) {
+            vTaskDelete(timeOutHandler);
+        }
+        return returnParam.value;
     }
-    if( timeOutHandler != NULL ) {
-        vTaskDelete(timeOutHandler);
-    }
-    return returnParam.value;
+    return -2;
 }
 
 void saveParam(param_t value) {
