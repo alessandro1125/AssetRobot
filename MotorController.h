@@ -51,6 +51,7 @@ class Motor {
         int getLastError();
         uint32_t getCurrentPosition();
         uint32_t getParam(uint16_t address);
+        int updateMcParam(uint16_t address, uint32_t value);
 };
 
 #ifdef __cplusplus

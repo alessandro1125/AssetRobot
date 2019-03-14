@@ -59,7 +59,7 @@ static void rx_task(void * pvParameters) {
                 /* debug */
                 for(size_t i = 0; i < rxBytes; i++)
                 {
-                    ESP_LOGI("UART", "Byte: %d", rxBufferData[i]);
+                    //ESP_LOGI("UART", "Byte: %d", rxBufferData[i]);
                 }
                 
                 uart2_rx_handler(rxBufferData, rxBytes);

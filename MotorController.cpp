@@ -99,6 +99,23 @@ uint32_t Motor::getParam(uint16_t address) {
     return GENERIC_ERROR;
 }
 
+int Motor::updateMcParam(uint16_t address, uint32_t value) {
+    param_t param;
+    param.address = address;
+    param.value = value;
+    switch(updateParam(param, Motor::asses_id)) {
+        case -2:
+            return SERIAL_PORT_BUSY;
+        case -1: 
+            return SERIAL_TIMEOUT_ERROR;
+        case 0:
+            return COMMAND_EXECUTED;
+            break;
+        default:break;
+    }
+    return GENERIC_ERROR;
+}
+
 int Motor::executeMovement(int32_t position) {
     ESP_LOGI(MOTOR_CONTROLLER_TAG,"Start movement to position %d", position);
     // Update targetPositionParam

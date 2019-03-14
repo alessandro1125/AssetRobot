@@ -14,8 +14,16 @@ extern "C" {
 #include "esp_spi_flash.h"
 #include "UartUtils.h"
 
+#define ERRROR_EVENT    0x1A
+#define TOUCH_EVENT     0x65
+#define UPDATE_PARAM_EVENT_TXT   0xF1
+
+
 typedef struct {
     uint16_t id;
+    uint16_t armId;
+    uint8_t  paramId;
+    uint32_t paramValue;
 }component_t;
 
 /* Initialize display */
@@ -29,7 +37,7 @@ void sendDisplayStatement(char * data, int len);
  * 1 -> Touch event
  * 2 -> Release Event
  */
-void setEventListener(void ( * event_callback)(int, component_t));
+void setEventListener(void ( * event_callback)(int, int, component_t));
 
 #ifdef __cplusplus
 }

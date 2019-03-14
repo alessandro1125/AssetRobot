@@ -7,6 +7,7 @@ extern "C" {
 
 #include "NextionUtils.h"
 #include "MotorController.h"
+#include "RobotStructure.h"
 
 
 #define RX_BUFFER_LEN 255
@@ -26,12 +27,16 @@ typedef struct {
 }controller_t;
 
 typedef struct {
+    int actionType;
     int evType;
     controller_t * controller;
+    component_t component;
 }queueParameters_t;
 
 void InitializeDisplay(void);
 void DefineController(int displayId, const char * progressBarId, Motor * mc, int type);
+
+/* TODO handle cambiamento pagina */
 
 #include "AsyncQueue.h"
 
