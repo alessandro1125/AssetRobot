@@ -1,4 +1,4 @@
 # AssetRobot ESP32 main software
 
-Main page file [main](/README.md)
+Main page file [main](main/README.md)
 
