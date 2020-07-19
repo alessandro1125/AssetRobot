@@ -10,4 +10,5 @@ __________________________________
 Software destinato al controllo assi robotici, comunicazione con serial devices AssetX ARM 
 
 ## Sezioni
-* Serial library
+
+* [Serial library](doc/serial.md)
