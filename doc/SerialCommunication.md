@@ -71,3 +71,5 @@ Return Values:
 ```c
 void clearSerial();
 ```
+-----------
+[Home](README.md)
