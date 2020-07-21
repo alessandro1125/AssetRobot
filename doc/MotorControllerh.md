@@ -59,14 +59,14 @@ uint32_t getCurrentPosition();
 
 <br>
 
-*Get parameter*: legge il valore del parametro specificato definito in [SerialCommunication.h](SerialCommunication.md)
+*Get parameter*: legge il valore del parametro specificato definito in [SerialCommunication.h](serial.md)
 ```c++
 uint32_t getCurrentPosition();
 ```
 
 <br>
 
-*Update parameter*: aggiorna il valore del parametro specificato definito in [SerialCommunication.h](SerialCommunication.md)
+*Update parameter*: aggiorna il valore del parametro specificato definito in [SerialCommunication.h](serial.md)
 ```c++
 int updateMcParam(uint16_t address, uint32_t value);
 ```
