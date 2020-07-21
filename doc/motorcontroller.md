@@ -18,8 +18,9 @@ L'interfaccia *ManualController* permette il controllo manuale tramite display .
 ## Library Fratures
 
 - ### Identificazione ARM devices con *armId*
-- ### Gestione automatica integrata con la [Serial library](serial.md)
-- ### Gestione automatica a callback integrata con la [Error library](error.md)
+- ### Gestione automatica integrata con la *[Serial library](serial.md)*
+- ### Gestione automatica a callback integrata con la *[Error library](error.md)*
+- ### Definizione di ogni tipo di struttura relatva con l'interfaccia *[RobotStructure](RobotStructure.md)*
 
 -------------
 [Home](../README.md)

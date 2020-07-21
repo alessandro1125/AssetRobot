@@ -15,5 +15,5 @@ int motorsCount = 7;
 ```c++
 void InitializeRobotStructure(void);
 ```
--------------
-[Home](../README.md)
+-----------
+[Home](motorcontroller.md)
