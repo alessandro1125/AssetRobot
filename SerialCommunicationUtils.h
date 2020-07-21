@@ -91,30 +91,30 @@ extern "C" {
 #define READING_TIMEOUT_MS      1000
 
 /* PARAMS DEFINITIONS */
-#define ACELERATION         0x01
-#define MAX_SPEED           0x02
-#define DECELERATION        0x03
-#define ERROR_TOLLERANCE    0x04
-#define KP                  0x05
-#define KI                  0x06
-#define TIME_TO_ERROR_TOLL  0x07
-#define TARGET_POSITION     0x08
-#define POSITION_PROFILE    0x09
-#define CURRENT_POSITION    0x0A
-#define ERROR               0x0B
-#define PWM_PID             0x0C
-#define ON_MOVING           0x0D
-#define MENO_POSITION       0x0E
-#define MAX_POSITION        0x0F
-#define ZERO_POSITION       0x10
-#define LAST_ERROR_OCCURRED 0xFF
+#define ACELERATION             0x01
+#define MAX_SPEED               0x02
+#define DECELERATION            0x03
+#define ERROR_TOLLERANCE        0x04
+#define KP                      0x05
+#define KI                      0x06
+#define TIME_TO_ERROR_TOLL      0x07
+#define TARGET_POSITION         0x08
+#define POSITION_PROFILE        0x09
+#define CURRENT_POSITION        0x0A
+#define ERROR                   0x0B
+#define PWM_PID                 0x0C
+#define ON_MOVING               0x0D
+#define MENO_POSITION           0x0E
+#define MAX_POSITION            0x0F
+#define ZERO_POSITION           0x10
+#define LAST_ERROR_OCCURRED     0xFF
 /* End params definitions */
 
 /* CMD DEFINITIONS */
-#define INIT_POSITION_CMD   0x00
+#define INIT_POSITION_CMD       0x00
 #define EXECUTE_MOVEMENT_CMD    0x01
-#define STOP_MOVEMENT_CMD   0x02
-#define GET_ERRORS_CMD      0x03
+#define STOP_MOVEMENT_CMD       0x02
+#define GET_ERRORS_CMD          0x03
 
 typedef struct {
     uint8_t address;
