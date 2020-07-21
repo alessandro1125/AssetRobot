@@ -14,3 +14,4 @@ Software destinato al controllo assi robotici, comunicazione con serial devices 
 * [Serial library](doc/serial.md)
 * [Motor Controller](doc/motorcontroller.md)
 * [Display library](doc/display.md)
+* [Errors library](doc/ErrorUtils.md)

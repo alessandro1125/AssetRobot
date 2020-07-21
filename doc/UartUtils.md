@@ -2,6 +2,8 @@
 
 Configurazione e gestione hadrware delle periferiche UART
 
+##### TODO: portare a livello di qualità superiore il sistema di recezione e decodifica pacchetti in modo di rendere il riconoscimento più efficiente e responsivo
+
 ## Definizioni
 
 
