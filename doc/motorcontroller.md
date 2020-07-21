@@ -11,7 +11,7 @@ L'interfaccia *ManualController* permette il controllo manuale tramite display .
 -------------------
 
 ## Library index
-* ### [MotorController](MotorController.md)
+* ### [MotorController](MotorControllerh.md)
 * ### [RobotStructure](RobotStructure.md)
 * ### [ManualController](ManualController.md)
 
