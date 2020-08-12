@@ -120,7 +120,7 @@ static void uart2_handler(uint8_t * recivedData, size_t len) {
     for(size_t i = 0; i < len; i++)
     {
         uint8_t data = recivedData[i];
-        ESP_LOGI("UART", "Byte: %d", data);
+        ESP_LOGI("UART2", "Byte: %d", data);
         if(state == 0) {
             if(data == TOUCH_EVENT || data == ERRROR_EVENT || data == UPDATE_PARAM_EVENT_TXT) {
                 eventRecivingType = data;

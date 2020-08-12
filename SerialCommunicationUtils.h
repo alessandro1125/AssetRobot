@@ -121,6 +121,24 @@ typedef struct {
     uint32_t value;
 }param_t;
 
+
+typedef struct {
+    
+    int decodingState;
+
+    uint8_t armIdL;
+    uint8_t armIdH;
+    uint16_t armId;
+
+    uint8_t dataLen;
+
+    uint8_t dataRecieved[128];
+    int     dataRecievedCount;
+
+    int activePacket;
+
+} packet_t;
+
 void serialCommunicationInit(void);
 void uart1_handler(uint8_t * recivedData, size_t len);
 
@@ -166,6 +184,11 @@ int serialFree(void);
 * reset serial port state
 */
 void clearSerial();
+
+
+void freePackets();
+
+void handlePackets(uint8_t dataByte) ;
 
 #ifdef __cplusplus
 }

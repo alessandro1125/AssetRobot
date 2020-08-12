@@ -21,7 +21,8 @@ extern "C" {
 #include "string.h"
 #include "driver/gpio.h"
 
-#define BAUD_RATE 9600
+#define BAUD_RATE_1 38400
+#define BAUD_RATE_2  9600
 #define  RX_BUF_SIZE 1024
 
 #define TX1D_PIN (GPIO_NUM_4)   // TX Serial communication motors

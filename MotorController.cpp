@@ -114,6 +114,7 @@ int Motor::updateMcParam(uint16_t address, uint32_t value) {
     param_t param;
     param.address = address;
     param.value = value;
+    while(serialFree() != 0);
     switch(updateParam(param, Motor::asses_id)) {
         case -2:
             return SERIAL_PORT_BUSY;
@@ -146,6 +147,7 @@ int Motor::executeMovement(int32_t position) {
     }
     vTaskDelay(500 / portTICK_PERIOD_MS);
     // Execute movement
+    while(serialFree() != 0);
     switch(executeCmd(EXECUTE_MOVEMENT_CMD, Motor::asses_id)) {
         case -2:
             return SERIAL_PORT_BUSY;

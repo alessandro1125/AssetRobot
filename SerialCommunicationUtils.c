@@ -6,13 +6,26 @@
 
 
 /* Protocol decoding variables */
+/*
 uint8_t decodingState = 0;
 size_t  trasmissionLen;
 uint8_t bytesRecived[BUFFER_PACKET_RECIVED];
 size_t  bytesRecivedCount = 0;
+*/
+
 
 param_t recivedPackets[BUFFER_PACKET_RECIVED];
 size_t recivedPacketsCount = 0;
+
+
+
+
+/* decoding packet */
+packet_t handlePacketsArray[20];
+int handlePacketsCount = 0;
+
+
+
 
 int timeoutFlag = 1;
 
@@ -22,15 +35,17 @@ uint16_t lastAddressRecieved = 0xFFFF;
 
 TaskHandle_t timeOutHandler = NULL;
 
-int serialBusy = 0;
+extern int serialBusy = 0;
+
+static int serialMode = 0;
 
 int serialFree(void) {
-    return serialBusy;
+    return serialMode;
 }
 
-void clearSerial() {
+/*void clearSerial() {
     serialBusy = 0;
-}
+}*/
 
 void uart1_handler(uint8_t * recivedData, size_t len) {
 
@@ -42,6 +57,18 @@ void uart1_handler(uint8_t * recivedData, size_t len) {
     int i,j;
     param_t param;
     for(i = 0; i < len; i++) {
+
+        if(recivedData[i] == 0x02) {
+            packet_t packet;
+            packet.decodingState = -1;
+            packet.dataRecievedCount = 0;
+            packet.activePacket = 1;
+            if(handlePacketsCount >= 20 )
+                handlePacketsCount = 0;
+            handlePacketsArray[handlePacketsCount++] = packet;
+        }
+        handlePackets(recivedData[i]);
+        /*
         //ESP_LOGI("RX_TASK_TAG", "Read 1 bytes: '%d'", recivedData[i]);
         switch(decodingState) {
             case 0:
@@ -49,6 +76,7 @@ void uart1_handler(uint8_t * recivedData, size_t len) {
                     // Trasmission started
                     decodingState = 4;
                     //ESP_LOGI("RX_TASK_TAG","Trasmission Started");
+                    //serialBusy = 1;
                 }
                 break;
             case 4:
@@ -89,21 +117,106 @@ void uart1_handler(uint8_t * recivedData, size_t len) {
                         param.value |= bytesRecived[j];
                         //ESP_LOGI("RX_TASK_TAG","Var state %d: %d  HEX: %x",j , param.value, param.value);
                     }
-                    if (checkByte == bytesRecived[trasmissionLen - 1] && lastAddressCalled == lastAddressRecieved) // Packet salvato
+                    if (checkByte == bytesRecived[trasmissionLen - 1] && lastAddressCalled == lastAddressRecieved) {// Packet salvato
                         saveParam(param);
-                    else { // IL packet viene scartato
+                        //serialBusy = 0;
+                    }else { // IL packet viene scartato
                         ESP_LOGI("RX_TASK_TAG","Packet wrong checkByte: %d", checkByte);
                     }
-                    /*ESP_LOGI("RX_TASK_TAG","Trasmission Decoded: address %d - value: %d", param.address
-                            , param.value);*/
+                    
                 }
                 decodingState = 0;
                 bytesRecivedCount = 0;
+                //serialBusy = 0;
                 //ESP_LOGI("RX_TASK_TAG","Trasmission ended");
                 break;
             default:break;
+        }*/
+    }
+}
+
+
+void handlePackets(uint8_t dataByte) {
+
+    //ESP_LOGE("TEST_MAX_SPEED", "%x, %x", address, Motor::asses_id);
+    
+    //ESP_LOGE("TEST_MAX_SPEED", "byte log %x", dataByte);
+
+    for(int k = 0; k < handlePacketsCount; k++) {
+        switch(handlePacketsArray[k].decodingState) {
+            case-1: handlePacketsArray[k].decodingState = 0;break;
+            case 0:
+                handlePacketsArray[k].armIdH = dataByte;
+                handlePacketsArray[k].decodingState = 1;
+                break;
+            case 1:
+                handlePacketsArray[k].armIdL = dataByte;
+                handlePacketsArray[k].armId = handlePacketsArray[k].armIdH | handlePacketsArray[k].armIdL;
+                lastAddressRecieved = handlePacketsArray[k].armId;
+                handlePacketsArray[k].decodingState = 2;
+                break;
+            case 2:
+                handlePacketsArray[k].dataLen = dataByte;
+                handlePacketsArray[k].decodingState = 3;
+                if(dataByte>128) {
+                    handlePacketsArray[k].activePacket = 0;
+                    freePackets();
+                }
+                break;
+            case 3:
+                /*ESP_LOGI("RX_TASK_TAG","packet: %d, state: %d, count %d, len %d", k, handlePacketsArray[k].decodingState, 
+                            handlePacketsArray[k].dataRecievedCount, handlePacketsArray[k].dataLen);*/
+                if(handlePacketsArray[k].dataRecievedCount < handlePacketsArray[k].dataLen) {
+                    handlePacketsArray[k].dataRecieved[handlePacketsArray[k].dataRecievedCount++] = dataByte;
+                }
+                if(handlePacketsArray[k].dataRecievedCount == handlePacketsArray[k].dataLen) {
+                    handlePacketsArray[k].decodingState = 4;
+                }
+                break;
+            case 4:
+                if(dataByte == 0x03) {
+                    param_t param;
+
+                    param.address = handlePacketsArray[k].dataRecieved[0];
+                    param.value = 0;
+
+                    uint8_t checkByte = handlePacketsArray[k].dataRecieved[0];
+                    
+                    for(int j = 1; j < handlePacketsArray[k].dataLen - 1; j++) { 
+                        checkByte += handlePacketsArray[k].dataRecieved[j];
+                        param.value = param.value << 8;
+                        param.value |= handlePacketsArray[k].dataRecieved[j];
+                        //ESP_LOGI("RX_TASK_TAG","Var state %d: %d  HEX: %x",j , param.value, param.value);
+                    }
+                    
+                    if (checkByte == handlePacketsArray[k].dataRecieved[handlePacketsArray[k].dataLen - 1] /*&& lastAddressCalled == lastAddressRecieved*/) {// Packet salvato
+                        saveParam(param);
+                    }else { // IL packet viene scartato
+                        ESP_LOGI("RX_TASK_TAG","Packet wrong checkByte: %x, %x", checkByte, handlePacketsArray[k].dataRecieved[handlePacketsArray[k].dataLen - 1]);
+                    }
+                }
+            default : 
+                handlePacketsArray[k].activePacket = 0;
+                freePackets();
+        }
+        //ESP_LOGI("RX_TASK_TAG","packet: %d, state: %d", k, handlePacketsArray[k].decodingState);
+    }
+}
+
+void freePackets() {
+    packet_t tmpPackets[20];
+    int tmpCountPackets = 0;
+    
+    for(int k = 0; k < handlePacketsCount; k++) {
+        if(handlePacketsArray[k].activePacket == 1) {
+            tmpPackets[tmpCountPackets++] = handlePacketsArray[k];
         }
     }
+    //ESP_LOGI("RX_TASK_TAG","packet: %d, %d", handlePacketsCount, tmpCountPackets);
+    for(int k = 0; k < tmpCountPackets; k++) {
+        handlePacketsArray[k] = tmpPackets[k];
+    }
+    handlePacketsCount = tmpCountPackets;
 }
 
 void timeoutTask(void * pvParameters) {
@@ -114,10 +227,11 @@ void timeoutTask(void * pvParameters) {
 
 
 int readParam(param_t * dest, uint8_t address, uint16_t armAddress){
-    if(serialBusy == 0) {
+    if(serialMode == 0) {
+        serialMode = 1;
+        //ESP_LOGE("TEST_MAX_SPEED", "Asking param: %x", address);
         gpio_set_level(TX1_ENABLE, 1);
         vTaskDelay(1 / portTICK_PERIOD_MS);
-        serialBusy = 1;
         lastAddressCalled = armAddress;
         uartSendByte(UART_NUM_1, 0x02);
         char armAddresl = (uint16_t)armAddress;
@@ -137,13 +251,13 @@ int readParam(param_t * dest, uint8_t address, uint16_t armAddress){
         xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
         while(getParam(dest, address) == -1) {
             if(timeoutFlag == 0) {
-                ESP_LOGI("RX_TASK_TAG","Reading timout failed");
-                serialBusy = 0;
+                ESP_LOGE("RX_TASK_TAG","Reading timout failed");
+                serialMode = 0;
                 return -1;
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        serialBusy = 0;
+        serialMode = 0;
         if( timeOutHandler != NULL ) {
             vTaskDelete(timeOutHandler);
         }
@@ -153,10 +267,10 @@ int readParam(param_t * dest, uint8_t address, uint16_t armAddress){
 }
 
 int updateParam(param_t param, uint16_t armAddress) {
-    if(serialBusy == 0) {
+    if(serialMode == 0) {
+        serialMode = 1;
         gpio_set_level(TX1_ENABLE, 1);
         vTaskDelay(1 / portTICK_PERIOD_MS);
-        serialBusy = 1;
         lastAddressCalled = armAddress;
         char checkByte = param.address;
         uartSendByte(UART_NUM_1, 0x02);
@@ -186,13 +300,13 @@ int updateParam(param_t param, uint16_t armAddress) {
         param_t returnParam;
         while(getParam(&returnParam, 0xFE) == -1) {
             if(timeoutFlag == 0) {
-                ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
-                serialBusy = 0;
+                ESP_LOGE("RX_TASK_TAG","Reading timout failed");
+                serialMode = 0;
                 return -1;
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        serialBusy = 0;
+        serialMode = 0;
         if( timeOutHandler != NULL ) {
             vTaskDelete(timeOutHandler);
         }
@@ -202,10 +316,10 @@ int updateParam(param_t param, uint16_t armAddress) {
 }
 
 int executeCmd(uint8_t cmd, uint16_t armAddress) {
-    if(serialBusy == 0) {
+    if(serialMode == 0) {
+        serialMode = 1;
         gpio_set_level(TX1_ENABLE, 1);
         vTaskDelay(1 / portTICK_PERIOD_MS);
-        serialBusy = 1;
         lastAddressCalled = armAddress;
         uartSendByte(UART_NUM_1, 0x02);
         char armAddresl = (uint16_t)armAddress;
@@ -224,15 +338,15 @@ int executeCmd(uint8_t cmd, uint16_t armAddress) {
         timeoutFlag = 1;
         xTaskCreate(timeoutTask, "timeout_task", 1024, NULL, configMAX_PRIORITIES, &timeOutHandler);
         param_t returnParam;
-        while(getParam(&returnParam, 0xFE) == -1 && getParam(&returnParam, 0xFF) == -1) { // 0xFE, address to eedback
+        while(getParam(&returnParam, 0xFE) == -1 && getParam(&returnParam, 0xFF) == -1) { // 0xFE, address to feedback
             if(timeoutFlag == 0) {
-                ESP_LOGI("RX_TASK_TAG","Cmd timout failed");
-                serialBusy = 0;
+                ESP_LOGE("RX_TASK_TAG","Reading timout failed");
+                serialMode = 0;
                 return -1;
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        serialBusy = 0;
+        serialMode = 0;
         if( timeOutHandler != NULL ) {
             vTaskDelete(timeOutHandler);
         }

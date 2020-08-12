@@ -105,24 +105,47 @@ void uartInit(uart_port_t port) {
 
     
     const uart_config_t uart_config = {
-        .baud_rate = BAUD_RATE,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
+            .baud_rate = (port == UART_NUM_1) ? BAUD_RATE_1 : BAUD_RATE_2,
+            .data_bits = UART_DATA_8_BITS,
+            .parity = UART_PARITY_DISABLE,
+            .stop_bits = UART_STOP_BITS_1,
+            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+        };
+
+    /*
+    if(port == UART_NUM_1) {
+        uart_config = {
+            .baud_rate = BAUD_RATE_1,
+            .data_bits = UART_DATA_8_BITS,
+            .parity = UART_PARITY_DISABLE,
+            .stop_bits = UART_STOP_BITS_1,
+            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+        };
+    }
+
+    if(port == UART_NUM_2) {
+        uart_config = {
+            .baud_rate = BAUD_RATE_2,
+            .data_bits = UART_DATA_8_BITS,
+            .parity = UART_PARITY_DISABLE,
+            .stop_bits = UART_STOP_BITS_1,
+            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+        };
+    }*/
+
     uart_param_config(port, &uart_config);
     if(port == UART_NUM_1)
         uart_set_pin(port, TX1D_PIN, RX1D_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     if(port == UART_NUM_2)
         uart_set_pin(port, TX2D_PIN, RX2D_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
-    int res = uart_set_line_inverse(port, UART_INVERSE_TXD | UART_INVERSE_RXD);
+    if(port == UART_NUM_1)
+        uart_set_line_inverse(port, UART_INVERSE_TXD | UART_INVERSE_RXD);
     
     // We won't use a buffer for sending data.
     uart_driver_install(port, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
 
     
 
-    xTaskCreate(rx_task, "uart_rx_task", 1024*2, NULL, configMAX_PRIORITIES, NULL);
+    xTaskCreate(rx_task, "uart_rx_task", 2048*4, NULL, configMAX_PRIORITIES, NULL);
 }

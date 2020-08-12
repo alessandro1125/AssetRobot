@@ -7,6 +7,7 @@ extern "C" {
 
 #include "MotorController.h"
 
+
 void InitializeRobotStructure(void);
 
 #ifdef __cplusplus
